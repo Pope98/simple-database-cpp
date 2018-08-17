@@ -1,0 +1,1405 @@
+// BANK.H
+
+#ifndef BANK_H
+#define BANK_H
+
+#include <vector>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <algorithm>
+#include <time.h>
+#include <map>
+#include <set>
+#include <exception>
+#include <stdexcept>
+
+class transaction;
+class global_transaction;
+class loan;
+class transfer;
+
+struct transfer
+{
+	int year;
+	int amount;
+};
+
+struct group_
+{
+	int transaction_count;
+	int total_amount;
+	group_() :transaction_count(0), total_amount(0) {}
+};
+
+struct coutry
+{
+	std::string country;
+	int amount;
+};
+
+struct group1
+{
+	int transaction_count;
+	int total_amount;
+	group1() :transaction_count(0), total_amount(0) {}
+};
+
+
+class Bank
+{
+    std::vector<transaction*>data;
+public:
+    Bank();
+    ~Bank();
+    Bank(const Bank& other);
+    void operator =(const Bank& other);
+    void search(std::string date) const;
+    void add_transaction(transaction* t);
+    void display_data() const;
+    void save(std::ostream& outs)const;
+    void load(std::istream& ins);
+    void sort_sender_id();
+    void sort_receiver_id();
+    void sort_amount_transfered();
+    void sort_transfer_date();
+    void erase_data(int row);
+    int find(std::string date) const;
+    int find(int l, int r, std::string date) const;
+	void display_record() const;
+	void advanced_sort_id();
+	void delete_on_year(int year);
+	void delete_on_amount(double amount);
+	void display_transfer_amounts();
+	void display_country_records();
+	void display_country_records1();
+	std::vector<std::string>dates();
+};
+
+#endif // BANK_H
+
+
+// TRANSACTION.H
+
+#ifndef TRANSACTION_H
+#define TRANSACTION_H
+
+
+class transaction
+{
+protected:
+    std::string transaction_id;
+    std::string sender_id;
+    std::string receiver_id;
+    double amount_transfered;
+    std::string transfer_date;
+    
+public:
+    transaction();
+    transaction(std::string new_sender_id, std::string new_receiver_id, double new_transfer_amount, std::string new_transfer_date);
+    virtual ~transaction(){}
+	std::string get_sender_id()const{return sender_id;}
+    std::string get_receiver_id()const{return receiver_id;}
+    double get_amount_transfered()const{return static_cast<int>(amount_transfered);}
+    std::string get_transfer_date()const{return transfer_date;}
+	int get_transfer_date_int()const;
+    std::string get_transaction_id()const{return transaction_id;}
+    void set_sender_id(std::string new_sender_id){sender_id = new_sender_id;}
+    void set_receiver_id(std::string new_receiver_id){receiver_id = new_receiver_id;}
+    void set_amount_transfered(double new_amount_transfered){amount_transfered = new_amount_transfered;}
+    void set_transfer_date(std::string new_transfer_date){transfer_date = new_transfer_date;}
+    virtual void output(std::ostream &outs)const;
+    virtual void input(std::istream &ins);
+    friend std::ostream& operator <<(std::ostream& outs, transaction &tmp);
+    friend std::istream& operator >>(std::istream& ins, transaction &tmp);
+
+};
+
+#endif // TRANSACTION_H
+
+
+// GLOBAL_TRANSACTION.H
+
+#ifndef GLOBAL_TRANSACTION_H
+#define GLOBAL_TRANSACTION_H
+
+#include "transaction.h"
+
+class global_transaction : public transaction
+{
+    std::string country;
+	static int global_transaction_count;
+public:
+    global_transaction();
+    global_transaction(transaction &data, std::string new_country);
+	~global_transaction(){}
+    void set_country(std::string new_country){country = new_country;}
+    std::string get_country()const {return country;}
+    virtual void output(std::ostream &outs)const;
+	virtual void input(std::istream &ins);
+	static int get_global_transaction_count() { return global_transaction_count; }
+
+};
+
+#endif // GLOBAL_TRANSACTION_H
+
+
+// LOAN.H
+
+#ifndef LOAN_H
+#define LOAN_H
+
+#include "transaction.h"
+
+class loan : public transaction
+{
+    std::string due_date;
+    double interest_rate;
+	static int loan_count;
+public:
+    loan();
+    loan(transaction &data, std::string new_due_date, double new_interest_rate);
+	~loan(){}
+    void set_due_date(std::string new_due_date){due_date = new_due_date;}
+    void set_interest_rate(double new_interest_rate){interest_rate = new_interest_rate;}
+    std::string get_due_date()const{return due_date;}
+    double get_interest_rate()const{return interest_rate;}
+    void output(std::ostream &outs)const;
+    void input(std::istream &ins);
+	static int get_loan_count() { return loan_count; }
+};
+
+#endif // LOAN_H
+
+
+// GROUP.H
+
+#ifndef GROUP_H
+#define GROUP_H
+
+
+class group;
+class loyalty_card;
+
+class membership
+{
+	std::vector<loyalty_card*>data;
+public:
+	membership();
+	membership(const membership&);
+	~membership();
+	void add_loyalty_card(loyalty_card *lc) { data.push_back(lc); }
+	void operator =(const membership &other);
+	void show() const;
+	void card_types();
+	const std::string& operator[](int idx) const;
+};
+
+class group
+{
+public:
+	virtual void generate() = 0;
+};
+
+class loyalty_card : public group
+{
+	std::string name;
+	double salary;
+	std::string year_started;
+	std::string card;
+public:
+	loyalty_card(){}
+	loyalty_card(std::string new_name, double new_salary, std::string new_year_started);
+	virtual ~loyalty_card(){}
+	std::string get_name() const { return name; }
+	double get_salary() const { return salary; }
+	std::string get_year_started() const { return year_started; }
+	std::string get_card() const { return card; }
+	void set_name(std::string new_name) { name = new_name; }
+	void set_salary(double new_salary) { salary = new_salary; }
+	void set_year_started(std::string new_year_started) { year_started = new_year_started; }
+	void set_card_color(std::string new_color) { card = new_color; }
+	void generate();
+	virtual void display_data(std::ostream& outs) const;
+	friend std::ostream& operator <<(std::ostream& outs, loyalty_card &lc);
+};
+
+class loyalty_card_bonus : public loyalty_card
+{
+	loyalty_card lc;
+	double bonus;
+public:
+	loyalty_card_bonus();
+	loyalty_card_bonus(const loyalty_card& _lc);
+	~loyalty_card_bonus(){}
+	loyalty_card get_card_data() { return lc; }
+	void set_card(loyalty_card _lc) { lc = _lc; }
+	double get_bonus() const { return bonus; }
+	void set_bonus(double new_bonus) { bonus = new_bonus; }
+	void display_data(std::ostream& outs) const;
+	void generate();
+};
+
+#endif
+
+// INCLUDES.H
+
+#ifndef INCLUDES_HPP
+#define INCLUDES_HPP
+
+#include "Bank.h"
+#include "transaction.h"
+#include "global_transaction.h"
+#include "loan.h"
+#include "group.h"
+
+
+#endif // includes
+
+
+// BANK.CPP
+
+#include <iostream>
+#include "includes.hpp"
+
+using namespace std;
+
+Bank::Bank()
+{
+
+}
+
+
+Bank::Bank(const Bank& other) : data(other.data.size())
+{
+    try
+	{
+		vector<transaction*>::iterator this_it = data.begin();
+		//cbegin() returns a const_iterator pointing to the first element in the container.
+		vector<transaction*>::const_iterator that_it = other.data.cbegin();
+		for (; that_it != other.data.cend(); ++this_it, ++that_it)
+			*this_it = new transaction(**that_it);
+	}
+	// in case of a memory leak if one of the 'new' calls throws an exception.
+	catch (...)
+	{
+		for (vector<transaction*>::iterator i = data.begin(); i != data.end(); ++i)
+			if (!*i)
+				break;
+			else
+				delete *i;
+
+		throw;
+	}
+}
+
+Bank::~Bank()
+{
+    for(int i = 0; i < data.size(); i++)
+    {
+        delete data[i];
+    }
+    data.clear();
+}
+
+
+void Bank::operator=(const Bank& other)
+{
+    for(unsigned int i = 0; i < other.data.size(); i++)
+    {
+        data[i] = other.data[i];
+    }
+}
+
+void Bank::search(std::string date) const
+{
+    bool sorted = true;
+    /*
+     * check if data is sorted
+     * if sorted -> binary search
+     * if not    -> linear search
+     */
+    for(unsigned int i = 0; i < data.size() - 1; i++)
+    {
+        if(data[i]->get_transfer_date() > data[i+1]->get_transfer_date())
+        {
+            sorted = false;
+            break;
+        }
+    }
+    int records_found = 0;
+    if(sorted == false)
+    {
+        find(date);
+    }
+    if(sorted == true)
+    {
+        cout << "Using binary search" << endl;
+        int position = find(0, data.size() - 1, date);
+        cout << "Record " << date << " found at line " << position << endl;
+    }
+}
+
+void Bank::add_transaction(transaction* t)
+{
+    data.push_back(t);
+
+}
+
+
+void Bank::display_data() const
+{
+    for(unsigned int i = 0; i < data.size(); i++)
+    {
+        data[i]->output(cout);
+    }
+}
+
+void Bank::save(ostream& outs) const
+{
+    for(unsigned int i = 0; i < data.size(); i++)
+    {
+        data[i]->output(outs);
+    }
+}
+
+
+void Bank::load(istream& ins)
+{
+	std::vector<transaction*>ids;
+    transaction tmp;
+    while(ins >> tmp)
+    {
+        ids.push_back(new transaction(tmp));
+    }
+    ins.clear();
+    ins.seekg(0, ios::beg);
+    for(unsigned int i = 0; i < ids.size(); i++)
+    {
+
+        if(ids.at(i)->get_transaction_id() == "Base")
+        {
+            transaction to;
+            ins >> to;
+            data.push_back(new transaction(to));
+        }
+        if(ids.at(i)->get_transaction_id() == "GLTR")
+        {
+            global_transaction gltr;
+            ins >> gltr;
+            data.push_back(new global_transaction(gltr));
+        }
+        if(ids.at(i)->get_transaction_id() == "LOAN")
+        {
+            loan lend;
+            ins >> lend;
+            data.push_back(new loan(lend));
+        }
+
+    }
+    for(unsigned int i = 0; i < ids.size(); i++)
+    {
+        delete ids.at(i);
+    }
+    ids.clear();
+}
+
+void Bank::sort_sender_id()
+{
+    int i, j;
+    bool swapped;
+    for (i = 0; i < data.size() - 1; i++)
+    {
+        swapped = false;
+        for (j = 0; j < data.size() - i - 1; j++)
+        {
+            if (data[j]->get_sender_id() > data[j+1]->get_sender_id())
+            {
+                swap(data[j], data[j+1]);
+                swapped = true;
+            }
+        }
+        if (swapped == false)
+            break;
+    }
+}
+
+void Bank::advanced_sort_id()
+{
+	sort(data.begin(), data.end(), [](transaction* a, transaction* b) -> bool { return (a->get_sender_id() < b->get_sender_id()); });
+}
+
+void Bank::sort_receiver_id()
+{
+    int i, j;
+    bool swapped;
+    for (i = 0; i < data.size() - 1; i++)
+    {
+        swapped = false;
+        for (j = 0; j < data.size() - i - 1; j++)
+        {
+            if (data[j]->get_receiver_id() > data[j+1]->get_receiver_id())
+            {
+                swap(data[j], data[j+1]);
+                swapped = true;
+            }
+        }
+        if (swapped == false)
+            break;
+    }
+}
+void display_country_records1()
+{
+	cout << "\n\t*****Country records*****" << endl;
+
+}
+
+void Bank::sort_amount_transfered()
+{
+    int i, j;
+    bool swapped;
+    for (i = 0; i < data.size() - 1; i++)
+    {
+        swapped = false;
+        for (j = 0; j < data.size() - i - 1; j++)
+        {
+            if (data[j]->get_amount_transfered() > data[j+1]->get_amount_transfered())
+            {
+                swap(data[j], data[j+1]);
+                swapped = true;
+            }
+        }
+        if (swapped == false)
+            break;
+    }
+}
+
+void Bank::sort_transfer_date()
+{
+    int i, j;
+    bool swapped;
+    for (i = 0; i < data.size() - 1; i++)
+    {
+        swapped = false;
+        for (j = 0; j < data.size() - i - 1; j++)
+        {
+            if (data[j]->get_transfer_date() > data[j+1]->get_transfer_date())
+            {
+                swap(data[j], data[j+1]);
+                swapped = true;
+            }
+        }
+        if (swapped == false)
+            break;
+    }
+}
+
+void Bank::erase_data(int row)
+{
+	if (!(row < 1 || row > data.size()))
+		data.erase(data.begin() + (row - 1));
+    else
+        cout << "Out of bounds!" << endl;
+}
+
+int Bank::find(string date) const
+{
+    unsigned int i;
+    cout << "Using linear search" << endl;
+    for(i = 0; i < data.size(); i++)
+    {
+        if(data[i]->get_transfer_date() == date)
+        {
+            cout << "Record " << date << " found at line " << i << endl;
+            data[i]->output(cout);
+        }
+    }
+    return i;
+}
+
+int Bank::find(int l, int r, string date) const
+{
+    if (r >= l)
+    {
+        // middle node
+        int mid = l + (r - l)/2;
+
+        if (data[mid]->get_transfer_date() == date)
+            return mid;
+        if (data[mid]->get_transfer_date() > date)
+            return find(l, mid-1, date);
+
+        // right subarray
+        return find(mid+1, r, date);
+    }
+
+    // no word found
+    return -1;
+}
+
+void Bank::display_record() const
+{
+	cout << "\n\t*****Transaction records*****" << endl;
+	map<int, group_>groups;
+	for (auto trans : data)
+	{
+		auto& group_ = groups[trans->get_transfer_date_int()];
+		group_.transaction_count += 1;
+		group_.total_amount += trans->get_amount_transfered();
+	}
+	for (const auto& p : groups) {
+		int year = p.first;
+		group_ g = p.second;
+		cout <<"\t        " << year << ": " << g.transaction_count << " " << g.total_amount << endl;
+	}
+	cout << endl;
+}
+
+
+vector<string> Bank::dates()
+{
+	vector<string>temp_dates;
+	string date;
+	for (unsigned int i = 0; i < data.size(); i++)
+	{
+		temp_dates.push_back(data[i]->get_transfer_date().substr(0, 4));
+	}
+	return temp_dates;
+}
+
+void Bank::delete_on_year(int year)
+{
+	data.erase(
+		remove_if(data.begin(), data.end(),
+			[year](transaction* a) { return (a->get_transfer_date_int() == year); }),
+		data.end());
+}
+
+void Bank::delete_on_amount(double amount)
+{
+	data.erase(
+		remove_if(data.begin(), data.end(),
+			[amount](transaction* a) { return (a->get_amount_transfered() == amount); }),
+		data.end());
+}
+
+void Bank::display_transfer_amounts()
+{
+	cout << "Transfer amounts:" << endl;
+	for (auto trans : data)
+	{
+		cout << trans->get_amount_transfered() << endl;
+	}
+	cout << endl;
+}
+
+
+// TRANSACTION.CPP
+#include <iostream>
+#include "includes.hpp"
+using namespace std;
+
+transaction::transaction()
+{
+
+}
+
+transaction::transaction(string new_sender_id, string new_receiver_id, double new_transfer_amount, string new_transfer_date)
+{
+    sender_id = new_sender_id;
+    receiver_id = new_receiver_id;
+    amount_transfered = new_transfer_amount;
+    transfer_date = new_transfer_date;
+}
+
+void transaction::output(ostream& outs) const
+{
+    if(&outs == &cout)
+    {
+        outs << sender_id << "\t" << receiver_id << "\t" << amount_transfered << "\t" << transfer_date << endl;
+    }
+    else
+    {
+        outs << "Base," << sender_id << "," << receiver_id << "," << amount_transfered << "," << transfer_date << endl;
+    }
+}
+
+void transaction::input(istream& ins)
+{
+    if(&ins == &cin)
+    {
+        cout << "sender id:";
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, sender_id);
+        cout << "receiver id:";
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, receiver_id);
+        cout << "amount to transfer:";
+        ins >> amount_transfered;
+        cout << "transaction date:";
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, transfer_date);
+
+    }
+    else
+    {
+        string line_contents;
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, line_contents);
+        istringstream iss(line_contents);
+        int i = 0;
+        while(iss)
+        {
+            string token;
+            getline(iss, token, ',');
+            switch(i)
+            {
+            case 0:
+                {
+				//if (sizeof(token) >= 4)
+					transaction_id = token;
+				//else
+					//throw invalid_data();
+                }
+            case 1:
+                {
+				//if (sizeof(token) >= 20)
+					sender_id = token;
+				//else
+					//throw invalid_data();
+                }
+            case 2:
+                {
+				//if (sizeof(token) >= 20)
+					receiver_id = token;
+				//else
+					//throw invalid_data();
+                }
+            case 3:
+                {
+                    amount_transfered = atof(token.c_str());
+					//if (isalpha(amount_transfered))
+						//throw invalid_data();
+                }
+            case 4:
+                {
+                    transfer_date = token;
+                }
+            }
+            i++;
+        }
+    }
+
+}
+
+
+ostream& operator <<(ostream& outs, transaction &tmp)
+{
+    tmp.output(outs);
+    return outs;
+}
+
+istream& operator >>(istream& ins, transaction &tmp)
+{
+    tmp.input(ins);
+    return ins;
+}
+
+int transaction::get_transfer_date_int()const
+{
+	string date = transfer_date;
+	date.substr(0, 4);
+	int int_date = atoi(date.c_str());
+	return int_date;
+}
+
+// GLOBAL_TRANSACTION.CPP
+
+#include <iostream>
+#include "includes.hpp"
+using namespace std;
+
+global_transaction::global_transaction()
+{
+	global_transaction_count++;
+}
+
+global_transaction::global_transaction(transaction &data, std::string new_country)
+: transaction(data), country(new_country)
+{
+	global_transaction_count++;
+}
+
+void global_transaction::output(std::ostream &outs) const
+{
+    if(&outs == &cout)
+    {
+        outs << sender_id << "\t" << receiver_id << "\t" << amount_transfered << "\t" << transfer_date << "\t" << country << endl;
+    }
+    else
+    {
+        outs << "GLTR," << sender_id << "," << receiver_id << "," << amount_transfered << "," << transfer_date << "," << country << endl;
+    }
+}
+
+void global_transaction::input(istream& ins)
+{
+    //transaction::input(ins);
+	if(&ins == &cin)
+    {
+
+        cout << "Country:" << endl;
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, country);
+
+    }
+    else
+    {
+        string line_contents;
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, line_contents);
+        istringstream iss(line_contents);
+        int i = 0;
+        while(iss)
+        {
+            string token;
+            getline(iss, token, ',');
+            switch(i)
+            {
+            case 0:
+                {
+                    transaction_id = token;
+                }
+            case 1:
+                {
+                    sender_id = token;
+                }
+            case 2:
+                {
+                    receiver_id = token;
+                }
+            case 3:
+                {
+                    amount_transfered = atof(token.c_str());
+                }
+            case 4:
+                {
+                    transfer_date = token;
+                }
+            case 5:
+                {
+                    country = token;
+                }
+            }
+            i++;
+        }
+    }
+}
+
+// LOAN.CPP
+
+#include <iostream>
+#include "includes.hpp"
+using namespace std;
+
+loan::loan()
+{
+	loan_count++;
+}
+
+loan::loan(transaction &data, std::string new_due_date, double new_interest_rate)
+: transaction(data), due_date(new_due_date), interest_rate(new_interest_rate)
+{
+	loan_count++;
+}
+
+void loan::output(std::ostream &outs) const
+{
+    if(&outs == &cout)
+    {
+        outs << sender_id << "\t" << receiver_id << "\t" << amount_transfered << "\t" << transfer_date << "\t" << due_date << "\t" << interest_rate << endl;
+    }
+    else
+    {
+        outs << "LOAN," << sender_id << "," << receiver_id << "," << amount_transfered << "," << transfer_date << "," << due_date << "," << interest_rate << endl;
+    }
+}
+
+void loan::input(istream& ins)
+{
+    //transaction::input(ins);
+    if(&ins == &cin)
+    {
+        cout << "Due date:" << endl;
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, due_date);
+        cout << "Interest rate: ";
+        ins >> interest_rate;
+
+    }
+    else
+    {
+        string line_contents;
+        if(ins.peek() == '\n')ins.ignore();
+        getline(ins, line_contents);
+        istringstream iss(line_contents);
+        int i = 0;
+        while(iss)
+        {
+            string token;
+            getline(iss, token, ',');
+            switch(i)
+            {
+            case 0:
+                {
+                    transaction_id = token;
+                }
+            case 1:
+                {
+                    sender_id = token;
+                }
+            case 2:
+                {
+                    receiver_id = token;
+                }
+            case 3:
+                {
+                    amount_transfered = atof(token.c_str());
+                }
+            case 4:
+                {
+                    transfer_date = token;
+                }
+            case 5:
+                {
+                    due_date = token;
+                }
+            case 6:
+                {
+                    interest_rate = atof(token.c_str());
+                }
+            }
+            i++;
+        }
+    }
+}
+
+// GROUP.CPP
+
+#include <iostream>
+#include "includes.hpp"
+using namespace std;
+														/*CLASS MEMBERSHIP*/
+membership::membership()
+{
+
+}
+
+membership::membership(const membership& other)
+	//:data(other.data)
+{
+	try
+	{
+		vector<loyalty_card*>::iterator this_it = data.begin();
+		vector<loyalty_card*>::const_iterator that_it = other.data.cbegin();
+		for (; that_it != other.data.cend(); ++this_it, ++that_it)
+			*this_it = new loyalty_card(**that_it);
+	}
+	catch (...)
+	{
+		for (vector<loyalty_card*>::iterator i = data.begin(); i != data.end(); ++i)
+			if (!*i)
+				break;
+			else
+				delete *i;
+
+		throw;
+	}
+}
+
+membership::~membership()
+{
+	for (unsigned int i = 0; i < data.size(); i++)
+	{
+		delete data[i];
+	}
+}
+
+void membership::operator=(const membership& other)
+{
+	for (unsigned int i = 0; i < other.data.size(); i++)
+	{
+		data[i] = other.data[i];
+	}
+}
+
+void membership::show() const
+{
+	for (unsigned int i = 0; i < data.size(); i++)
+	{
+		data[i]->display_data(cout);
+	}
+}
+
+
+const string& membership::operator[](int idx) const
+{
+	if (!(idx > data.size()))
+		return data[idx]->get_card();
+}
+
+void membership::card_types()
+{
+	set<string>cards;
+	for (unsigned int i = 0; i < data.size(); i++)
+	{
+		cards.insert(data[i]->get_card());
+	}
+	cout << "\nTypes of cards:" << endl;
+	for (set<string>::iterator it = cards.begin(); it != cards.end(); ++it)
+		cout << '\n' << *it;
+	cout << endl;
+	cout << endl;
+}
+
+/*
+void membership::find_by_card(string id)
+{
+	std::vector<loyalty_card*>::iterator i = std::find_if(data.begin(),
+		data.end(),
+		[id](loyalty_card* lc) { return lc->get_card() == id; });
+	cout << *i << endl;
+}
+*/
+
+														/*CLASS LOYALTY_CARD*/
+
+loyalty_card::loyalty_card(std::string new_name, double new_salary, string new_year_started)
+	: name(new_name), salary(new_salary), year_started(new_year_started)
+{
+
+}
+
+void loyalty_card::generate()
+{
+	int current_year = 2018; // modify this accordingly
+	int years_as_client = atoi(year_started.c_str());
+	int years_passed = current_year - years_as_client;
+	switch (years_passed)
+	{
+	case 0:
+	{
+		card = "Red-Black";
+		break;
+	}
+	case 1:
+	{
+		card = "Yellow";
+		break;
+	}
+	case 2:
+	{
+		card = "Green";
+		break;
+	}
+	case 3:
+	{
+		card = "Blue";
+	}
+	case 4:
+	{
+		card = "Green-Dark";
+		break;
+	}
+	default:
+	{
+		card = "Green-White";
+	}
+
+	}
+}
+
+void loyalty_card::display_data(ostream& outs) const
+{
+	outs << get_name() << " "  << salary << " " << year_started << " " << card << endl;
+}
+
+ostream& operator <<(ostream& outs, loyalty_card &lc)
+{
+	lc.display_data(cout);
+	return outs;
+}
+
+
+														/*CLASS LOYALTY_CARD_BONUS*/
+loyalty_card_bonus::loyalty_card_bonus()
+{
+
+}
+
+loyalty_card_bonus::loyalty_card_bonus(const loyalty_card& _lc)
+	:lc(_lc)
+{
+
+}
+
+void loyalty_card_bonus::display_data(ostream& outs) const
+{
+	outs << lc.get_name() << " " << lc.get_salary() << " " << lc.get_year_started() << " " << lc.get_card() << " " << get_bonus() << endl;
+}
+
+void loyalty_card_bonus::generate()
+{
+	double temp_bonus = 0.0;
+	int year_started = atoi(lc.get_year_started().c_str());
+	temp_bonus = ((year_started * lc.get_salary()) / 1000);
+	bonus = temp_bonus;
+
+}
+
+
+// DB.CPP (MAIN FILE)
+
+#include <iostream>
+#include "includes.hpp"
+using namespace std;
+
+int menu();
+int menu2();
+int menu3();
+
+int global_transaction::global_transaction_count = 0;
+int loan::loan_count = 0;
+
+
+int main()
+{
+    Bank bank;
+	transaction to;
+	string file_name = "vault.txt";
+	ifstream fin(file_name.c_str());
+	if (!fin.fail())
+	{
+		bank.load(fin);
+		fin.close();
+		int choice = 0;
+		while (choice != 13)
+		{
+			choice = menu();
+			switch (choice)
+			{
+			case 1:
+			{
+				cin >> to;
+				bank.add_transaction(&to);
+				break;
+			}
+			case 2:
+			{
+				string country_name;
+				cout << "Enter country name:";
+				cin >> country_name;
+				cin >> to;
+				transaction *tr = new global_transaction(to, country_name);
+				bank.add_transaction(tr);
+				break;
+			}
+			case 3:
+			{
+				system("cls");
+				cout << "sender id\t\treceiver id\t\tamount\t  date\t\tCountry\t     Interest Rate" << endl;
+				bank.display_data();
+				cout << endl;
+				bank.display_record();
+				bank.display_country_records1();
+				cout << "Global transactions: " << global_transaction::get_global_transaction_count() << endl;
+				cout << "Loans: " << loan::get_loan_count() << endl;
+				cout << "\n-----------------------------------------------------------------------------------------------\n";
+				break;
+			}
+			case 4:
+			{
+				system("cls");
+				string search_date;
+				cout << "Enter date of transaction(s)" << endl;
+				if (cin.peek() == '\n')cin.ignore();
+				getline(cin, search_date);
+				bank.search(search_date);
+				break;
+			}
+			case 5:
+			{
+				system("cls");
+				cout << "Sorted transactions by sender id's" << endl;
+				//bank.sort_sender_id();
+				bank.advanced_sort_id();
+				bank.display_data();
+				break;
+			}
+			case 6:
+			{
+				system("cls");
+				cout << "Sorted transactions by receiver id's" << endl;
+				bank.sort_receiver_id();
+				bank.display_data();
+				break;
+			}
+			case 7:
+			{
+				system("cls");
+				cout << "Sorted transactions by transfer amount" << endl;
+				bank.sort_amount_transfered();
+				bank.display_data();
+				break;
+			}
+			case 8:
+			{
+				system("cls");
+				cout << "Sorted transactions by transaction date" << endl;
+				bank.sort_transfer_date();
+				bank.display_data();
+				break;
+			}
+			case 9:
+			{
+				string due_date;
+				double interest_rate;
+				cout << "Enter loan's due date:";
+				cin >> due_date;
+				cout << "Interest rate: ";
+				cin >> interest_rate;
+				cin >> to;
+				transaction *tr = new loan(to, due_date, interest_rate);
+				bank.add_transaction(tr);
+				break;
+			}
+			case 10:
+			{
+				int row;
+				cout << "Select row: ";
+				cin >> row;
+				bank.erase_data(row);
+				break;
+			}
+			case 11:
+			{
+				system("CLS");
+				membership chart;
+				vector<string>date = bank.dates();
+				int choice = 0;
+				while (choice != 3)
+				{
+				choice = menu2();
+				switch (choice)
+				{
+					case 1:
+					{
+						for (unsigned int i = 0; i < date.size(); i++)
+						{
+							loyalty_card *lc = new loyalty_card("Josh", 500.34, date[i]); // Random data for runtime demonstration
+							lc->generate();
+							chart.add_loyalty_card(lc);
+						}
+						chart.show();
+						chart.card_types();
+						cout << endl;
+						break;
+					}
+					case 2:
+					{
+						for (unsigned int i = 0; i < date.size(); i++)
+						{
+							loyalty_card lc("Josh", 500.34, date[i]); // Random data for runtime demonstration
+							lc.generate();
+							loyalty_card_bonus *lcb = new loyalty_card_bonus(lc);
+							lcb->generate();
+							chart.add_loyalty_card(lcb);
+						}
+						chart.show();
+						break;
+					}
+					case 3:
+					{
+						system("CLS");
+						break;
+					}
+					default:
+					{
+						cout << "Activity '" << choice << "' not recognised!" << endl;
+					}
+				}
+				}
+				break;
+			}
+			case 12:
+			{
+				system("CLS");
+				int choice = 0;
+				while (choice != 3)
+				{
+					choice = menu3();
+					switch (choice)
+					{
+					case 1:
+					{
+						system("CLS");
+						int year;
+						cout << "Enter year to delete:";
+						cin >> year;
+						bank.delete_on_year(year);
+						break;
+
+					}
+					case 2:
+					{
+						system("CLS");
+						double amount;
+						bank.display_transfer_amounts();
+						cout << "Enter amount to delete:";
+						cin >> amount;
+						bank.delete_on_amount(amount);
+						break;
+
+					}
+					case 3:
+					{
+						system("CLS");
+						break;
+
+					}
+					default:
+					{
+						cout << "Wrong input!" << endl;
+					}
+
+					}
+				}
+			}
+			case 13:
+			{
+
+				break;
+			}
+			default:
+			{
+				cout << "No such activity!" << endl;
+			}
+			}
+		}
+		ofstream fout(file_name.c_str());
+		if (!fout.fail())
+		{
+			bank.save(fout);
+		}
+		else
+		{
+			cout << "File not found!" << endl;
+		}
+		fout.close();
+	}
+	else
+	{
+		cout << "File does not exist" << endl;
+		ofstream new_file(file_name.c_str());
+		new_file.close();
+		main();
+	}
+    return 0;
+}
+
+int menu()
+{
+	int choice;
+	bool valid = false;
+	cout << "1. Add local transaction" << endl;
+	cout << "2. Add global transaction" << endl;
+	cout << "3. Display data" << endl;
+	cout << "4. Search transactions by date" << endl;
+	cout << "5. Sort transactions by sender id's" << endl;
+	cout << "6. Sort transactions by receiver id's" << endl;
+	cout << "7. Sort transactions by transfer amount" << endl;
+	cout << "8. Sort transactions by transfer date" << endl;
+	cout << "9. Lend money" << endl;
+	cout << "10. Erase row" << endl;
+	cout << "11. Loyalty card giveaway!" << endl;
+	cout << "12. Delete data based on criteria" << endl;
+	cout << "13. Quit" << endl;
+	while (!valid) {
+		cout << "\nChoose activity: ";
+		cin >> choice;
+		if (cin.fail())
+		{
+			cout << "Wrong input!" << endl;
+			cin.clear();
+			cin.ignore(2147483647, '\n');
+		}
+		else
+		{
+			valid = true;
+		}
+	}
+	return choice;
+}
+
+int menu2()
+{
+	int choice;
+	bool valid = false;
+	cout << "--Bank's loyalty card menu--" << endl;
+	cout << "1. Check card state" << endl;
+	cout << "2. Check bonus" << endl;
+	cout << "3. Previous" << endl;
+	while (!valid) {
+		cout << "\nChoose activity: ";
+		cin >> choice;
+		if (cin.fail())
+		{
+			cout << "Wrong input!" << endl;
+			cin.clear();
+			cin.ignore(2147483647, '\n');
+		}
+		else
+		{
+			valid = true;
+		}
+	}
+	return choice;
+}
+
+int menu3()
+{
+	int choice;
+	bool valid = false;
+	cout << "1. Delete based on year" << endl;
+	cout << "2. Delete based on amount" << endl;
+	cout << "3. Previous" << endl;
+	while (!valid) {
+		cout << "\nChoose activity: ";
+		cin >> choice;
+		if (cin.fail())
+		{
+			cout << "Wrong input!" << endl;
+			cin.clear();
+			cin.ignore(2147483647, '\n');
+		}
+		else
+		{
+			valid = true;
+		}
+	}
+	return choice;
+}
+
+
+// data records file
+
+Base,LT012342996837214674,LT582965001876389204,3500,2017-12-31
+Base,LT023566225623677332,LT456349872895826796,100,2012-07-01
+Base,LT992375618949762344,LT981734350971267837,9100,2013-01-17
+GLTR,LT876346374832711486,DE232458927736477800,5050,2016-12-12,Denmark
+LOAN,LT876346374832711486,DE232458927736477800,5050,2016-12-12,2020-12-11,50.45
+GLTR,LT092342766579431356,SWE34346780298507622,17250,2017-05-27,Sweden
+GLTR,LT948484748485866555,NE858473638575785854,3990,2012-12-12,Netherlands
+GLTR,GE034253684964023456,GE948245738897549600,600,2012-10-04,Georgia
+GLTR,LT854537229574859654,SW854537229574859654,6050,2015-05-12,Sweden
+GLTR,EN754839275938273945,HUN35958476667390599,4000,2010-12-29,Hungary
